@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Room {
+  id            String      @id @default(cuid())
+  name          String
+  description   String
+  pricePerNight Decimal     @db.Decimal(10, 2)
+  maxAdults     Int         @default(2)
+  maxChildren   Int         @default(2)
+  maxGuests     Int         @default(4)
+  roomCount     Int         @default(1)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  images   RoomImage[]
+  bookings Booking[]
+}
+
+model RoomImage {
+  id     String @id @default(cuid())
+  url    String
+  alt    String @default("")
+  order  Int    @default(0)
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  checkIn   DateTime @db.Date
+  checkOut  DateTime @db.Date
+  guests    Int      @default(1)
+  guestName String   @default("")
+  status    String   @default("confirmed") // confirmed, pending, cancelled
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([roomId, checkIn, checkOut])
+  @@index([status])
+}
